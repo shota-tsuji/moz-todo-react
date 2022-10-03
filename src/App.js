@@ -1,19 +1,47 @@
 import Todo from "./components/Todo";
 import Form from "./components/Form";
 import FilterButton from "./components/FilterButton";
+import React, {useState} from "react";
+import {nanoid} from "nanoid";
 
 function App(props) {
-    const taskList = props.tasks.map((task) => (
+    const [tasks, setTasks] = useState(props.tasks);
+
+    function toggleTaskCompleted(id) {
+        const updatedTasks = tasks.map((task) => {
+            // if this task has the same ID as the edited task
+            if (id === task.id) {
+                // use object spread to make a new object
+                // whose `completed` prop has been inverted
+                return {...task, completed: !task.completed}
+            }
+            return task;
+        });
+        setTasks(updatedTasks);
+    }
+
+    function deleteTask(id) {
+        const remainTasks = tasks.filter((task) => id !== task.id);
+        setTasks(remainTasks);
+    }
+
+    const taskList = tasks.map((task) => (
         <Todo
             id={task.id}
             name={task.name}
             completed={task.completed}
             key={task.id}
+            toggleTaskCompleted={toggleTaskCompleted}
+            deleteTask={deleteTask}
         />
     ));
     function addTask(name) {
-        alert(name);
+        const newTask = { id: `todo-${nanoid()}`, name, completed: false };
+        setTasks([...tasks, newTask]);
     }
+
+    const tasksNoun = taskList.length !== 1 ? 'tasks' : 'task';
+    const headingText = `${taskList.length} ${tasksNoun} remaining`;
 
     return (
         <div className="todoapp stack-large">
@@ -24,9 +52,7 @@ function App(props) {
                 <FilterButton />
                 <FilterButton />
             </div>
-            <h2 id="list-heading">
-                3 tasks remaining
-            </h2>
+            <h2 id="list-heading">{headingText}</h2>
             <ul
                 role="list"
                 className="todo-list stack-large stack-exception"
